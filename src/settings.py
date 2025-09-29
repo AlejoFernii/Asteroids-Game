@@ -1,0 +1,29 @@
+# Game Settings and Constants
+
+# Screen Dimensions
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
+
+# Frames per second
+FPS = 60
+
+# Ship Settings
+SHIP_ACCELERATION = 0.2
+SHIP_FRICTION = 0.99
+SHIP_ROTATION_SPEED = 5
+SHIP_MAX_SPEED = 7
+
+# Bullet Settings
+BULLET_SPEED = 10
+BULLET_LIFETIME = 60
+
+# Asteroid Settings
+ASTEROID_MIN_SPEED = 1
+ASTEROID_MAX_SPEED = 3
+ASTEROID_SPLIT_COUNT = 2
+
+# Colors (RGB Tuples)
+
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+DEEP_SKY_BLUE = (0, 191, 255)
