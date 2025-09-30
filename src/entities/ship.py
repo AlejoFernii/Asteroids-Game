@@ -92,7 +92,7 @@ class Ship:
         if self.invincibility_timer > 0:
             # Skip drawing every few frames → blinking effect
             if (self.invincibility_timer // self.flash_interval) % 2 == 0:
-                return  # skip drawing this frame
+                return  # Skip drawing this frame
 
         rad = math.radians(self.angle)
         tip = (self.x + math.cos(rad) * self.size, self.y - math.sin(rad) * self.size)
@@ -131,3 +131,6 @@ class Ship:
             self.lives -= 1
             self.invincibility_timer = 120
             print(f"Lives Left: {self.lives}")
+
+    def game_start(self):
+        self.invincibility_timer = 180

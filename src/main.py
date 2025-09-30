@@ -7,6 +7,7 @@ from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, WHITE, BLACK
 from entities.ship import Ship
 from entities.bullet import Bullet
 from entities.asteroid import Asteroid
+from entities.points import Point
 
 from systems.ui import UI
 from systems.collision import ship_asteroid_collision, bullet_asteroid_collision
@@ -37,9 +38,10 @@ def main():
     ship = Ship(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
     bullets = []
     asteroids = spawn_manager.spawn_asteroids()
+    points = []
 
     ui = UI()
-    score = 0
+    # score = 0
     start_game = False
 
     # Start Menu Loop
@@ -55,6 +57,7 @@ def main():
 
     # Game Loop
     running = True
+    ship.game_start()
     while running:
 
         # ---Event handeling---
@@ -68,6 +71,8 @@ def main():
         # ---Input + Updates---
         keys = pg.key.get_pressed()
         ship.handle_input(keys)
+
+        # Update Ship
         ship.update()
 
         # Update Bullets
@@ -80,15 +85,22 @@ def main():
         for asteroid in asteroids:
             asteroid.update()
 
+        # Update Point Icons
+        for point in points:
+            point.update()
+
         # Check Bullet-Asteroid Collision
         for bullet in bullets[:]:
             for asteroid in asteroids[:]:
                 if bullet_asteroid_collision(bullet, asteroid):
                     bullets.remove(bullet)
 
-                    score += 100
+                    ui.update_score(asteroid.rank)
 
                     new_asteroids = asteroid.split()
+                    new_point = Point(amount=asteroid.rank, spawn_point=asteroid)
+                    points.append(new_point)
+
                     asteroids.remove(asteroid)
                     asteroids.extend(new_asteroids)
 
@@ -107,7 +119,8 @@ def main():
                 break
 
         # ---Draw---
-        # Draw Backgroun
+
+        # Draw Background
         screen.blit(bg, (0, 0))
 
         # Draw Ship
@@ -121,8 +134,12 @@ def main():
         for asteroid in asteroids:
             asteroid.draw(screen)
 
+        # Draw Point Icons
+        for point in points:
+            point.draw(screen)
+
         # Draw UI HUD
-        ui.draw(screen, ship, score)
+        ui.draw(screen, ship)
 
         pg.display.flip()
         clock.tick(FPS)
@@ -130,7 +147,7 @@ def main():
 
     game_over = True
     while game_over:
-        ui.draw_game_over(screen, score)
+        ui.draw_game_over(screen)
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 pg.quit()

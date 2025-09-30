@@ -15,7 +15,12 @@ from assets_loader import load_asteroid_images
 
 
 class Asteroid:
-    def __init__(self, x=None, y=None, size=40, image=None):
+
+    LARGE_RANK = 100
+    MEDIUM_RANK = 250
+    SMALL_RANK = 500
+
+    def __init__(self, x=None, y=None, size=40, image=None, rank=100):
         self.x = x if x is not None else random.randint(0, SCREEN_WIDTH)
         self.y = y if y is not None else random.randint(0, SCREEN_HEIGHT)
 
@@ -30,10 +35,13 @@ class Asteroid:
         self.image = image if image else load_asteroid_images()["large"]
         self.rect = self.image.get_rect(center=(self.x, self.y))
 
+        self.rank = rank if rank else self.choose_rank()
+
     def update(self):
         self.x += self.velocity_x
         self.y += self.velocity_y
 
+        # Warp Screen
         if self.x < 0:
             self.x = SCREEN_WIDTH
         elif self.x > SCREEN_WIDTH:
@@ -55,7 +63,11 @@ class Asteroid:
             new_size = self.size // 2
             return [
                 Asteroid(
-                    self.x, self.y, new_size, image=load_asteroid_images()["medium"]
+                    self.x,
+                    self.y,
+                    new_size,
+                    image=load_asteroid_images()["medium"],
+                    rank=self.choose_rank("medium"),
                 )
                 for _ in range(ASTEROID_SPLIT_COUNT)
             ]
@@ -63,7 +75,11 @@ class Asteroid:
             new_size = self.size // 2
             return [
                 Asteroid(
-                    self.x, self.y, new_size, image=load_asteroid_images()["small"]
+                    self.x,
+                    self.y,
+                    new_size,
+                    image=load_asteroid_images()["small"],
+                    rank=self.choose_rank("small"),
                 )
                 for _ in range(ASTEROID_SPLIT_COUNT)
             ]
@@ -76,3 +92,11 @@ class Asteroid:
         distance = math.hypot(dx, dy)
 
         return distance < self.size + ship.size
+
+    def choose_rank(cls, rank="large"):
+        if rank == "small":
+            return cls.SMALL_RANK
+        elif rank == "medium":
+            return cls.MEDIUM_RANK
+        else:
+            return cls.LARGE_RANK
