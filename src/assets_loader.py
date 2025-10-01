@@ -15,3 +15,11 @@ def load_asteroid_images():
 
 def load_bg():
     return pg.image.load("assets/images/asteroids-bg.png").convert()
+
+
+def load_powerups():
+    return {
+        "rank_1": pg.image.load("assets/images/powerup-1.png").convert_alpha(),
+        "rank_2": pg.image.load("assets/images/powerup-2.png").convert_alpha(),
+        "rank_3": pg.image.load("assets/images/powerup-3.png").convert_alpha(),
+    }

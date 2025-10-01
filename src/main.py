@@ -1,6 +1,7 @@
 import pygame as pg
 import sys
 import math
+import random
 
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, WHITE, BLACK
 
@@ -8,10 +9,12 @@ from entities.ship import Ship
 from entities.bullet import Bullet
 from entities.asteroid import Asteroid
 from entities.points import Point
+from entities.powerup import Powerup
 
 from systems.ui import UI
 from systems.collision import ship_asteroid_collision, bullet_asteroid_collision
 from systems.spawn_manager import SpawnManager
+from systems.powerup_manager import PowerupManager
 
 from assets_loader import load_bg
 
@@ -29,16 +32,20 @@ def main():
     bg = load_bg()
     bg = pg.transform.scale(bg, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
+    Powerup.load_images()
+
     # Create Clock to manage frame rate
     clock = pg.time.Clock()
 
     spawn_manager = SpawnManager()
+    powerup_manager = PowerupManager()
 
     # Entity Intances
     ship = Ship(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
-    bullets = []
     asteroids = spawn_manager.spawn_asteroids()
+    bullets = []
     points = []
+    powerups = []
 
     ui = UI()
     # score = 0
@@ -86,8 +93,13 @@ def main():
             asteroid.update()
 
         # Update Point Icons
-        for point in points:
+        for point in points[:]:
             point.update()
+            if not point.is_alive():
+                points.remove(point)
+
+        # Update Powerups
+        powerup_manager.update(powerups)
 
         # Check Bullet-Asteroid Collision
         for bullet in bullets[:]:
@@ -95,10 +107,14 @@ def main():
                 if bullet_asteroid_collision(bullet, asteroid):
                     bullets.remove(bullet)
 
-                    ui.update_score(asteroid.rank)
+                    ui.update_score(asteroid.rank, bullet.powerup_rank)
 
                     new_asteroids = asteroid.split()
-                    new_point = Point(amount=asteroid.rank, spawn_point=asteroid)
+                    new_point = Point(
+                        amount=asteroid.rank,
+                        spawn_point=asteroid,
+                        powerup_rank=bullet.powerup_rank,
+                    )
                     points.append(new_point)
 
                     asteroids.remove(asteroid)
@@ -117,6 +133,11 @@ def main():
                     print("Game Over!")
                     running = False
                 break
+        for powerup in powerups[:]:
+            powerup.update()
+            if ship.rect.colliderect(powerup.rect):
+                powerup_manager.pickup(powerup, powerups)
+                ship.activate_powerup(powerup.rank)
 
         # ---Draw---
 
@@ -137,6 +158,10 @@ def main():
         # Draw Point Icons
         for point in points:
             point.draw(screen)
+
+        # Draw Powerups
+        for powerup in powerups:
+            powerup.draw(screen)
 
         # Draw UI HUD
         ui.draw(screen, ship)

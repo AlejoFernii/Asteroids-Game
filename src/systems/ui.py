@@ -8,15 +8,15 @@ class UI:
         self.large_font = pg.font.SysFont(None, 72)
         self.score = 0
 
-    def update_score(self, rank):
-        self.score += rank
+    def update_score(self, rank, powerup_rank):
+        self.score += rank * powerup_rank
 
     def draw(self, surface, ship):
         # Draw Lives
         lives_text = self.font.render(f"Lives: {ship.lives}", True, WHITE)
         surface.blit(lives_text, (10, 10))
 
-        score_text = self.font.render(f"Score: {self.score}", True, WHITE)
+        score_text = self.font.render(f"Score: {self.score:,.0f}", True, WHITE)
         surface.blit(score_text, (SCREEN_WIDTH - 150, 10))
 
     def draw_start_menu(self, surface):
@@ -38,7 +38,7 @@ class UI:
     def draw_game_over(self, surface):
         surface.fill(BLACK)
         game_over_text = self.large_font.render("GAME OVER", True, WHITE)
-        score_text = self.font.render(f"Final Score: {self.score}", True, WHITE)
+        score_text = self.font.render(f"Final Score: {self.score:,.0f}", True, WHITE)
         prompt_text = self.font.render(
             "Press ENTER to Restart or ESC to Quit", True, WHITE
         )

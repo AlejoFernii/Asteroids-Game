@@ -28,6 +28,9 @@ class Ship:
         self.lives = 3
         self.invincibility_timer = 0
         self.flash_interval = 10
+        self.powerup_active = True
+        self.powerup_rank = 1
+        self.powerup_end_time = pg.time.get_ticks() + 10000
 
     def handle_input(self, keys):
 
@@ -87,6 +90,11 @@ class Ship:
 
         self.rect.center = (self.x, self.y)
 
+        # Powerup Timer
+        if self.powerup_active and pg.time.get_ticks() >= self.powerup_end_time:
+            self.powerup_active = False
+            self.powerup_rank = 1
+
     def draw(self, surface):
         # Flash ship when invincible
         if self.invincibility_timer > 0:
@@ -124,7 +132,19 @@ class Ship:
         rad = math.radians(angle)
         tip_x = self.x + math.cos(rad) * self.size
         tip_y = self.y - math.sin(rad) * self.size
-        return Bullet(tip_x, tip_y, angle)
+        return Bullet(
+            tip_x,
+            tip_y,
+            angle,
+            is_powerup=self.powerup_active,
+            powerup_rank=self.powerup_rank,
+        )
+
+    def activate_powerup(self, powerup_rank, duration=3000):
+        """Call this when ship picks up a powerup"""
+        self.powerup_active = True
+        self.powerup_end_time = pg.time.get_ticks() + duration
+        self.powerup_rank = powerup_rank
 
     def take_hit(self):
         if self.invincibility_timer == 0:
