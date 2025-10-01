@@ -28,7 +28,7 @@ class Ship:
         self.lives = 3
         self.invincibility_timer = 0
         self.flash_interval = 10
-        self.powerup_active = True
+        self.powerup_active = False
         self.powerup_rank = 1
         self.powerup_end_time = pg.time.get_ticks() + 10000
 

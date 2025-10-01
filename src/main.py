@@ -15,6 +15,7 @@ from systems.ui import UI
 from systems.collision import ship_asteroid_collision, bullet_asteroid_collision
 from systems.spawn_manager import SpawnManager
 from systems.powerup_manager import PowerupManager
+from systems.level_manager import LevelManager
 
 from assets_loader import load_bg
 
@@ -42,12 +43,13 @@ def main():
 
     # Entity Intances
     ship = Ship(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
-    asteroids = spawn_manager.spawn_asteroids()
+    asteroids = spawn_manager.spawn_asteroids(count=2)
     bullets = []
     points = []
     powerups = []
 
-    ui = UI()
+    level_manager = LevelManager(spawn_manager, ship)
+    ui = UI(level_manager)
     # score = 0
     start_game = False
 
@@ -139,6 +141,8 @@ def main():
                 powerup_manager.pickup(powerup, powerups)
                 ship.activate_powerup(powerup.rank)
 
+        # Check Level Status
+
         # ---Draw---
 
         # Draw Background
@@ -166,6 +170,7 @@ def main():
         # Draw UI HUD
         ui.draw(screen, ship)
 
+        level_manager.check_status(asteroids=asteroids)
         pg.display.flip()
         clock.tick(FPS)
         # End of Game Loop

@@ -3,10 +3,11 @@ from settings import SCREEN_WIDTH, SCREEN_HEIGHT, WHITE, BLACK
 
 
 class UI:
-    def __init__(self):
+    def __init__(self, level_manager):
         self.font = pg.font.SysFont(None, 36)
         self.large_font = pg.font.SysFont(None, 72)
         self.score = 0
+        self.level_manager = level_manager
 
     def update_score(self, rank, powerup_rank):
         self.score += rank * powerup_rank
@@ -17,7 +18,10 @@ class UI:
         surface.blit(lives_text, (10, 10))
 
         score_text = self.font.render(f"Score: {self.score:,.0f}", True, WHITE)
-        surface.blit(score_text, (SCREEN_WIDTH - 150, 10))
+        surface.blit(score_text, ((SCREEN_WIDTH - score_text.get_width()) // 2, 10))
+
+        level_text = self.font.render(f"Level: {self.level_manager.level}", True, WHITE)
+        surface.blit(level_text, (SCREEN_WIDTH - 100, 10))
 
     def draw_start_menu(self, surface):
         surface.fill(BLACK)
@@ -42,10 +46,17 @@ class UI:
         prompt_text = self.font.render(
             "Press ENTER to Restart or ESC to Quit", True, WHITE
         )
+        level_text = self.font.render(
+            f"Highest Level: {self.level_manager.level}", True, WHITE
+        )
 
         surface.blit(
             game_over_text,
             ((SCREEN_WIDTH - game_over_text.get_width()) // 2, SCREEN_HEIGHT // 4),
+        )
+        surface.blit(
+            level_text,
+            ((SCREEN_WIDTH - level_text.get_width()) // 2, SCREEN_HEIGHT // 2.5),
         )
         surface.blit(
             score_text,
