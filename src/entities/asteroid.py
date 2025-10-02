@@ -14,13 +14,17 @@ from settings import (
 from assets_loader import load_asteroid_images
 
 
-class Asteroid:
+class Asteroid(pg.sprite.Sprite):
 
     LARGE_RANK = 100
     MEDIUM_RANK = 250
     SMALL_RANK = 500
 
+    IMAGES = None
+
     def __init__(self, x=None, y=None, size=40, image=None, rank=100):
+        super().__init__()
+
         self.x = x if x is not None else random.randint(0, SCREEN_WIDTH)
         self.y = y if y is not None else random.randint(0, SCREEN_HEIGHT)
 
@@ -32,7 +36,8 @@ class Asteroid:
 
         self.size = size
         self.alive = True
-        self.image = image if image else load_asteroid_images()["large"]
+        self.image = image if image else self.IMAGES["large"]
+        self.mask = pg.mask.from_surface(self.image)
         self.rect = self.image.get_rect(center=(self.x, self.y))
 
         self.rank = rank if rank else self.choose_rank()
@@ -66,8 +71,8 @@ class Asteroid:
                     self.x,
                     self.y,
                     new_size,
-                    image=load_asteroid_images()["medium"],
-                    rank=self.choose_rank("medium"),
+                    image=self.IMAGES["medium"],
+                    rank=self.MEDIUM_RANK,
                 )
                 for _ in range(ASTEROID_SPLIT_COUNT)
             ]
@@ -78,25 +83,15 @@ class Asteroid:
                     self.x,
                     self.y,
                     new_size,
-                    image=load_asteroid_images()["small"],
-                    rank=self.choose_rank("small"),
+                    image=self.IMAGES["small"],
+                    rank=self.SMALL_RANK,
                 )
                 for _ in range(ASTEROID_SPLIT_COUNT)
             ]
         else:
             return []
 
-    def collides_with(self, ship):
-        dx = self.x - ship.x
-        dy = self.y - ship.y
-        distance = math.hypot(dx, dy)
-
-        return distance < self.size + ship.size
-
-    def choose_rank(cls, rank="large"):
-        if rank == "small":
-            return cls.SMALL_RANK
-        elif rank == "medium":
-            return cls.MEDIUM_RANK
-        else:
-            return cls.LARGE_RANK
+    @classmethod
+    def load_images(cls):
+        if cls.IMAGES == None:
+            cls.IMAGES = load_asteroid_images()

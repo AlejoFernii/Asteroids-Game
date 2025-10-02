@@ -22,4 +22,5 @@ def load_powerups():
         "rank_1": pg.image.load("assets/images/powerup-1.png").convert_alpha(),
         "rank_2": pg.image.load("assets/images/powerup-2.png").convert_alpha(),
         "rank_3": pg.image.load("assets/images/powerup-3.png").convert_alpha(),
+        "life": pg.image.load("assets/images/powerup-life.png").convert_alpha(),
     }

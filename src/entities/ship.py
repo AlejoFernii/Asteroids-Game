@@ -13,14 +13,17 @@ from .bullet import Bullet
 from assets_loader import load_ship_image
 
 
-class Ship:
+class Ship(pg.sprite.Sprite):
+
     def __init__(self, x, y):
+        super().__init__()
         self.x = x
         self.y = y
         self.angle = 0
         self.velocity_x = 0
         self.velocity_y = 0
         self.image = load_ship_image()
+        self.mask = pg.mask.from_surface(self.image)
         self.rect = self.image.get_rect(center=(x, y))
 
         self.size = 20
@@ -140,11 +143,14 @@ class Ship:
             powerup_rank=self.powerup_rank,
         )
 
-    def activate_powerup(self, powerup_rank, duration=3000):
+    def activate_powerup(self, powerup, duration=3000):
         """Call this when ship picks up a powerup"""
-        self.powerup_active = True
-        self.powerup_end_time = pg.time.get_ticks() + duration
-        self.powerup_rank = powerup_rank
+        if powerup.type == "life":
+            self.lives += powerup.lives
+        else:
+            self.powerup_active = True
+            self.powerup_end_time = pg.time.get_ticks() + duration
+            self.powerup_rank = powerup.rank
 
     def take_hit(self):
         if self.invincibility_timer == 0:

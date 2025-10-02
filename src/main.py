@@ -3,7 +3,7 @@ import sys
 import math
 import random
 
-from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, WHITE, BLACK
+from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, WHITE, BLACK, GAME_TITLE
 
 from entities.ship import Ship
 from entities.bullet import Bullet
@@ -19,8 +19,6 @@ from systems.level_manager import LevelManager
 
 from assets_loader import load_bg
 
-GAME_TITLE = "Asteroids Clone"
-
 
 def main():
 
@@ -34,21 +32,21 @@ def main():
     bg = pg.transform.scale(bg, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
     Powerup.load_images()
+    UI.load_bg_image()
+    Asteroid.load_images()
 
     # Create Clock to manage frame rate
     clock = pg.time.Clock()
-
     spawn_manager = SpawnManager()
-    powerup_manager = PowerupManager()
 
     # Entity Intances
     ship = Ship(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
-    asteroids = spawn_manager.spawn_asteroids(count=2)
-    bullets = []
-    points = []
-    powerups = []
-
     level_manager = LevelManager(spawn_manager, ship)
+    powerup_manager = PowerupManager()
+    asteroids = pg.sprite.Group(spawn_manager.spawn_asteroids(count=2))
+    bullets = pg.sprite.Group()
+    points = []
+
     ui = UI(level_manager)
     # score = 0
     start_game = False
@@ -75,7 +73,7 @@ def main():
                 running = False
             if event.type == pg.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    bullets.append(ship.shoot(pg.mouse.get_pos()))
+                    bullets.add(ship.shoot(pg.mouse.get_pos()))
 
         # ---Input + Updates---
         keys = pg.key.get_pressed()
@@ -85,14 +83,13 @@ def main():
         ship.update()
 
         # Update Bullets
-        for bullet in bullets[:]:
-            bullet.update()
-            if not bullet.is_alive():
-                bullets.remove(bullet)
+        bullets.update()
 
         # Update Asteroids
-        for asteroid in asteroids:
-            asteroid.update()
+        asteroids.update()
+
+        # Update Powerups
+        powerup_manager.update()
 
         # Update Point Icons
         for point in points[:]:
@@ -100,48 +97,49 @@ def main():
             if not point.is_alive():
                 points.remove(point)
 
-        # Update Powerups
-        powerup_manager.update(powerups)
-
         # Check Bullet-Asteroid Collision
-        for bullet in bullets[:]:
-            for asteroid in asteroids[:]:
-                if bullet_asteroid_collision(bullet, asteroid):
-                    bullets.remove(bullet)
 
-                    ui.update_score(asteroid.rank, bullet.powerup_rank)
+        hits = pg.sprite.groupcollide(
+            bullets, asteroids, True, True, collided=pg.sprite.collide_mask
+        )
 
-                    new_asteroids = asteroid.split()
-                    new_point = Point(
-                        amount=asteroid.rank,
-                        spawn_point=asteroid,
-                        powerup_rank=bullet.powerup_rank,
-                    )
-                    points.append(new_point)
+        for bullet, asteroid_list in hits.items():
+            for asteroid in asteroid_list:
+                # Update score
+                ui.update_score(asteroid.rank, bullet.powerup_rank)
 
-                    asteroids.remove(asteroid)
-                    asteroids.extend(new_asteroids)
+                # Split asteroid into smaller ones
+                new_asteroids = asteroid.split()
+                asteroids.add(new_asteroids)
 
-                    break
+                # Spawn floating score text/points
+                new_point = Point(
+                    amount=asteroid.rank,
+                    spawn_point=asteroid,
+                    powerup_rank=bullet.powerup_rank,
+                )
+                points.append(new_point)
 
         # Check Ship-Asteroid Collision
-        for asteroid in asteroids:
-            if ship.invincibility_timer == 0 and ship_asteroid_collision(
-                ship, asteroid
-            ):
-                ship.take_hit()
-                if ship.lives <= 0:
+        if ship.invincibility_timer == 0:
+            ship_hit = pg.sprite.spritecollide(
+                ship, asteroids, False, collided=pg.sprite.collide_mask
+            )
 
+            if ship_hit:
+                ship.take_hit()
+
+                if ship.lives <= 0:
                     print("Game Over!")
                     running = False
-                break
-        for powerup in powerups[:]:
-            powerup.update()
-            if ship.rect.colliderect(powerup.rect):
-                powerup_manager.pickup(powerup, powerups)
-                ship.activate_powerup(powerup.rank)
+
+        pickups = pg.sprite.spritecollide(ship, powerup_manager.group, dokill=True)
+        for powerup in pickups:
+            powerup_manager.pickup(powerup)
+            ship.activate_powerup(powerup)
 
         # Check Level Status
+        level_manager.check_status(asteroids=asteroids)
 
         # ---Draw---
 
@@ -152,25 +150,21 @@ def main():
         ship.draw(screen)
 
         # Draw Bullets
-        for bullet in bullets:
-            bullet.draw(screen)
+        bullets.draw(screen)
 
         # Draw Asteroids
-        for asteroid in asteroids:
-            asteroid.draw(screen)
+        asteroids.draw(screen)
 
         # Draw Point Icons
         for point in points:
             point.draw(screen)
 
         # Draw Powerups
-        for powerup in powerups:
-            powerup.draw(screen)
+        powerup_manager.draw(screen)
 
         # Draw UI HUD
         ui.draw(screen, ship)
 
-        level_manager.check_status(asteroids=asteroids)
         pg.display.flip()
         clock.tick(FPS)
         # End of Game Loop

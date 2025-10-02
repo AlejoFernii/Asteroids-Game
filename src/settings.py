@@ -1,5 +1,5 @@
 # Game Settings and Constants
-
+GAME_TITLE = "Asteroids Clone"
 # Screen Dimensions
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -15,7 +15,7 @@ SHIP_MAX_SPEED = 7
 
 # Bullet Settings
 BULLET_SPEED = 10
-BULLET_LIFETIME = 60
+BULLET_LIFETIME = 90
 
 # Asteroid Settings
 ASTEROID_MIN_SPEED = 1

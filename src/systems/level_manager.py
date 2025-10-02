@@ -20,7 +20,7 @@ class LevelManager:
         new_asteroids = self.spawn_manager.spawn_asteroids(
             count=(self.asteroids_to_spawn)
         )
-        asteroids.extend(new_asteroids)
+        asteroids.add(new_asteroids)
 
     def check_status(self, asteroids):
         if len(asteroids) == 0:
